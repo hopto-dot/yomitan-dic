@@ -57,8 +57,6 @@ dictionary.add_entry(entry)
 For more control over the entry's content, you can manually add HTML elements using the `create_html_element()` function:
 
 ```python
-dictionary = Dictionary("Example_Dictionary")
-
 entry = DicEntry("食べる", "たべる", tag="v5r")
 
 definition_element = create_html_element("ul", [ # A bullet point list containing one bullet point with text "To eat"
