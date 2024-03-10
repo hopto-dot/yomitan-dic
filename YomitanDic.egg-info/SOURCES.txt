@@ -1,0 +1,8 @@
+README.md
+setup.py
+YomitanDic.egg-info/PKG-INFO
+YomitanDic.egg-info/SOURCES.txt
+YomitanDic.egg-info/dependency_links.txt
+YomitanDic.egg-info/top_level.txt
+yomichan-dic/YomitanDic.py
+yomichan-dic/__init__.py

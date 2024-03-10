@@ -1,0 +1,6 @@
+Metadata-Version: 2.1
+Name: YomitanDic
+Version: 0.1.2
+Summary: A library for easily creating dictionary files importable into Yomichan for Japanese popup dictionaries
+Author: JawGBoi
+Requires-Python: >=3.6
