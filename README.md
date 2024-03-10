@@ -12,6 +12,11 @@ To install YomitanDic, use pip:
 pip install yomitandic
 ```
 
+or to update yomitandic (may need to run the command twice):
+```
+pip install --upgrade --force-reinstall yomitandic
+```
+
 ## Usage
 
 Here's how you can use YomitanDic to create dictionary entries:
