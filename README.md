@@ -1,6 +1,8 @@
 # YomitanDic
 
-YomitanDic is a Python library that makes it easy to create dictionary files importable into Yomitan for Japanese popup dictionaries. With YomitanDic, you can quickly create dictionary entries with definitions, links, and custom HTML elements.
+**YomitanDic** is a Python library that makes it easy to create dictionary files importable into [Yomitan](https://github.com/themoeway/yomitan) for Japanese popup dictionaries. With YomitanDic, you can quickly create dictionary entries with definitions, links, and custom HTML elements.
+
+**YomitanDic** offers a high degree of customisability (and more to come) but also simpler methods too!
 
 ## Installation
 
@@ -8,6 +10,11 @@ To install YomitanDic, use pip:
 
 ```
 pip install yomitandic
+```
+
+or to update yomitandic (may need to run the command twice):
+```
+pip install --upgrade --force-reinstall yomitandic
 ```
 
 ## Usage
@@ -57,15 +64,17 @@ For more control over the entry's content, you can manually add HTML elements us
 ```python
 entry = DicEntry("食べる", "たべる", tag="v5r")
 
-definition_element = create_html_element("ul", [
-    create_html_element("li", "To ", [create_html_element("b", "eat"), "."])
+definition_element = create_html_element("ul", [ # A bullet point list containing one bullet point with text "To eat"
+    create_html_element("li", "To eat")
 ])
-link_element = create_html_element("ul", [
-    create_html_element("li", [create_html_element("a", "https://jisho.org/word/食べる", href="https://jisho.org/word/食べる")])
-], style={"listStyleType": "\"⧉\""}, data={"wikipedia": "continue-reading"})
-                                      # Same as:
-entry.add_element(definition_element) # <ul> <li>To <b>eat</b>.</li> </ul>
-entry.add_element(link_element)       # # <ul> <li> <a href="https://jisho.org/word/食べる">https://jisho.org/word/食べる</a> </li> </ul>
+link_element = create_html_element("ul", [ # A bullet point list containing one bullet point with hyperlink text "View on Jisho"
+    create_html_element("li", [
+        create_html_element("a", "View on Jisho", href="https://jisho.org/word/食べる")
+    ])
+], style={"listStyleType": "\"⧉\""})
+
+entry.add_element(definition_element)
+entry.add_element(link_element)
 
 dictionary.add_entry(entry)
 ```
