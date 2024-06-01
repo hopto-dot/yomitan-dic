@@ -4,5 +4,9 @@ YomitanDic.egg-info/PKG-INFO
 YomitanDic.egg-info/SOURCES.txt
 YomitanDic.egg-info/dependency_links.txt
 YomitanDic.egg-info/top_level.txt
-yomichan-dic/YomitanDic.py
-yomichan-dic/__init__.py
+yomitandic/__init__.py
+yomitandic/yomitandic.py
+yomitandic.egg-info/PKG-INFO
+yomitandic.egg-info/SOURCES.txt
+yomitandic.egg-info/dependency_links.txt
+yomitandic.egg-info/top_level.txt

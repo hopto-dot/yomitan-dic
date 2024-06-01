@@ -1,7 +1,7 @@
 import json
 import os
 import zipfile
-from html import escape
+import shutil
 
 class DicEntry:
     def __init__(self, word, reading, tag="", definition=None):
@@ -21,8 +21,8 @@ class DicEntry:
         return [
             self.word,
             self.reading,
-            self.tag,
             "",
+            self.tag,
             0,
             content,
             0,
@@ -55,9 +55,15 @@ class DicEntry:
         self.structured_content = True
 
     def validate_element(self, element):
-        allowed_elements = ["br", "ruby", "rt", "rp", "table", "thread", "tbody", "tfoot", "tr", "td", "th", "span", "div", "ol", "ul", "li", "img", "a"]
+        allowed_elements = ["br", "ruby", "rt", "rp", "table", "thead", "tbody", "tfoot", "tr", "td", "th", "span", "div", "ol", "ul", "li", "img", "a"]
+        allowed_href_elements = ["a"]
+
         if element["tag"] not in allowed_elements:
             raise ValueError(f"Unsupported HTML element: {element['tag']}")
+
+        if "href" in element and element["tag"] not in allowed_href_elements:
+            raise ValueError(f"The 'href' attribute is not allowed in the '{element['tag']}' element, only <a>.")
+
         if "content" in element:
             if isinstance(element["content"], list):
                 for child_element in element["content"]:
@@ -75,6 +81,11 @@ class Dictionary:
 
     def export(self):
         folder_name = self.dictionary_name
+        
+        # Remove the existing folder if it already exists
+        if os.path.exists(folder_name):
+            shutil.rmtree(folder_name)
+        
         os.makedirs(folder_name, exist_ok=True)
 
         # Save index.json
@@ -114,18 +125,23 @@ class Dictionary:
 
     def zip(self):
         zip_file_name = f"{self.dictionary_name}.zip"
+        
+        if os.path.exists(zip_file_name):
+            os.remove(zip_file_name)
+        
         with zipfile.ZipFile(zip_file_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for root, dirs, files in os.walk(self.dictionary_name):
                 for file in files:
                     file_path = os.path.join(root, file)
                     zipf.write(file_path, os.path.relpath(file_path, self.dictionary_name))
 
-def create_html_element(tag, content, href=None, style=None, data=None):
+def create_html_element(tag, content=None, href=None, style=None, data=None):
     element = {"tag": tag}
-    if isinstance(content, str):
-        element["content"] = content
-    else:
-        element["content"] = content
+    if tag != "br":
+        if isinstance(content, str):
+            element["content"] = content
+        else:
+            element["content"] = content
     if href:
         element["href"] = href
     if style:

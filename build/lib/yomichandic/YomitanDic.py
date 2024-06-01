@@ -9,40 +9,61 @@ class DicEntry:
         self.reading = reading
         self.tag = tag
         self.content = []
+        self.structured_content = False
         if definition:
             self.set_simple_content(definition)
 
-
     def to_list(self):
+        if self.structured_content:
+            content = [{"type": "structured-content", "content": self.content}]
+        else:
+            content = self.content
         return [
             self.word,
             self.reading,
             self.tag,
             "",
             0,
-            [{"type": "structured-content", "content": self.content}],
+            content,
             0,
             ""
         ]
 
     def add_element(self, element):
+        self.validate_element(element)
         self.content.append(element)
+        self.structured_content = True
 
     def set_simple_content(self, definition):
-        self.content = [
-            create_html_element("p", definition)
-        ]
+        if isinstance(definition, str):
+            self.content = [definition]
+        elif isinstance(definition, list):
+            self.content = definition
+        else:
+            raise ValueError("Definition must be a string or a list of strings")
+        self.structured_content = False
 
     def set_link_content(self, definition, link):
         self.content = [
             create_html_element("ul", [
                 create_html_element("li", definition)
-            ], data={"wikipedia": "abstract"}),
-
+            ]),
             create_html_element("ul", [
                 create_html_element("li", [create_html_element("a", link, href=link)])
-            ], style={"listStyleType": "\"⧉\""}, data={"wikipedia": "continue-reading"})
+            ], style={"listStyleType": "\"⧉\""})
         ]
+        self.structured_content = True
+
+    def validate_element(self, element):
+        allowed_elements = ["br", "ruby", "rt", "rp", "table", "thread", "tbody", "tfoot", "tr", "td", "th", "span", "div", "ol", "ul", "li", "img", "a"]
+        if element["tag"] not in allowed_elements:
+            raise ValueError(f"Unsupported HTML element: {element['tag']}")
+        if "content" in element:
+            if isinstance(element["content"], list):
+                for child_element in element["content"]:
+                    self.validate_element(child_element)
+            elif not isinstance(element["content"], str):
+                raise ValueError("Content must be a string or a list of elements")
 
 class Dictionary:
     def __init__(self, dictionary_name):
@@ -64,12 +85,12 @@ class Dictionary:
         }
         index_file = os.path.join(folder_name, "index.json")
         with open(index_file, 'w', encoding='utf-8') as out_file:
-            json.dump(index_json, out_file, ensure_ascii=False, indent=2)
+            json.dump(index_json, out_file, ensure_ascii=False)
 
         file_counter = 1
         entry_counter = 0
         dictionary = []
-        entry_id = 1
+        entry_id = 0
 
         for entry in self.entries:
             entry_list = entry.to_list()
@@ -81,7 +102,7 @@ class Dictionary:
             if entry_counter >= 10000:
                 output_file = os.path.join(folder_name, f"term_bank_{file_counter}.json")
                 with open(output_file, 'w', encoding='utf-8') as out_file:
-                    json.dump(dictionary, out_file, ensure_ascii=False, indent=2)
+                    json.dump(dictionary, out_file, ensure_ascii=False)
                 dictionary = []
                 file_counter += 1
                 entry_counter = 0
@@ -89,7 +110,7 @@ class Dictionary:
         if dictionary:
             output_file = os.path.join(folder_name, f"term_bank_{file_counter}.json")
             with open(output_file, 'w', encoding='utf-8') as out_file:
-                json.dump(dictionary, out_file, ensure_ascii=False, indent=2)
+                json.dump(dictionary, out_file, ensure_ascii=False)
 
     def zip(self):
         zip_file_name = f"{self.dictionary_name}.zip"
@@ -100,7 +121,11 @@ class Dictionary:
                     zipf.write(file_path, os.path.relpath(file_path, self.dictionary_name))
 
 def create_html_element(tag, content, href=None, style=None, data=None):
-    element = {"tag": tag, "content": content}
+    element = {"tag": tag}
+    if isinstance(content, str):
+        element["content"] = content
+    else:
+        element["content"] = content
     if href:
         element["href"] = href
     if style:
@@ -110,39 +135,23 @@ def create_html_element(tag, content, href=None, style=None, data=None):
     return element
 
 if __name__ == "__main__":
-    # Usage example
-    from Dictionary_Advanced import DicEntry, Dictionary, create_html_element
-
-    # Create a dictionary to add entries to
     dictionary = Dictionary("Example_Dictionary")
 
-    # Method 1: The simplest way of creating an entry
-    entry1 = DicEntry("踊る", "おどる", definition="To dance")
-    dictionary.add_entry(entry1)
-
-    # Method 2: set_link_content() sets the definition content to a show a definition along with a link underneath
-    entry2 = DicEntry("行く", "いく")
-    entry2.set_link_content(
-        "行く means 'to go'.",
-        "https://ja.wikipedia.org/wiki/行く"
-    )
-
-    dictionary.add_entry(entry2)
-
-    # Method 3: Manually add html element to the definition content. This includes being able to add hrefs, styles and data
-    entry3 = DicEntry("食べる", "たべる", tag="v5r")
+    entry = DicEntry("食べる", "たべる", tag="v5r")
 
     definition_element = create_html_element("ul", [
-        create_html_element("li", "To ", [create_html_element("b", "eat"), "."])
+        create_html_element("li", "To eat")
     ])
     link_element = create_html_element("ul", [
-        create_html_element("li", [create_html_element("a", "https://jisho.org/word/食べる", href="https://jisho.org/word/食べる")])
-    ], style={"listStyleType": "\"⧉\""}, data={"wikipedia": "continue-reading"})
+        create_html_element("li", [
+            create_html_element("a", "View on Jisho", href="https://jisho.org/word/食べる")
+        ])
+    ], style={"listStyleType": "\"⧉\""})
 
-    entry3.add_element(definition_element) # <ul> <li>To <b>eat</b>.</li> </ul>
-    entry3.add_element(link_element)       # <ul> <li> <a href="https://jisho.org/word/食べる">https://jisho.org/word/食べる</a> </li> </ul>
+    entry.add_element(definition_element)
+    entry.add_element(link_element)
 
-    dictionary.add_entry(entry3)
+    dictionary.add_entry(entry)
 
-    dictionary.export() # Write all entries to word_bank.json files inside a folder with the name of the dictionary
-    dictionary.zip() # Zip the folder
+    dictionary.export()
+    dictionary.zip()
