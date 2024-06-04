@@ -2,7 +2,7 @@
 
 **YomitanDic** is a Python library that makes it easy to create dictionary files importable into [Yomitan](https://github.com/themoeway/yomitan) for Japanese popup dictionaries. With YomitanDic, you can quickly create dictionary entries with definitions, links, and custom HTML elements.
 
-**YomitanDic** offers a high degree of customisability (and more to come) but also simpler methods too!
+**YomitanDic** offers a high degree of customisability but also simpler methods too!
 
 ## Installation
 
